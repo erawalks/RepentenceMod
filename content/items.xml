@@ -1,6 +1,6 @@
 <items gfxroot="gfx/items/" version="1">
   <!-- T.Isaac to Isaac -->
-	<passive name="Ordinary Life" description="What if it all's just a dream?" gfx="01_ordinarylife.png" quality="3" />
+	<active name="Ordinary Life" description="What if it all's just a dream?" gfx="01_ordinarylife.png" quality="3" maxcharges = "12"/>
   <!-- T.Isaac to Satan -->
 	<passive name="Missing memory" description="Who is she?" gfx="97_untitled.png" quality="2" />
   <!-- T.Isaac to the Lamb -->
