@@ -1,19 +1,43 @@
+---!! VARIABLES !!---
 local game = Game()
 local rplus = RegisterMod("Repentance Plus", 1)
 local sfx = SFXManager()
 local music = MusicManager()
 
+local BASEMENTKEY_CHANCE = 5
+
 Collectibles = {
-  -- 12RR, on use deactivates all items and deletes everything from every room, allowing you to pass freely. On second use, this item discharges and everything
-  -- goes back to normal, allowing you to gain charges for next use.
+	-- 12RR, on use deactivates all items and deletes everything from every room, allowing you to pass freely. On second use, this item discharges and everything
+	-- goes back to normal, allowing you to gain charges for next use.
 	ORDLIFE = Isaac.GetItemIdByName("Ordinary Life"),
+	-- Passive, allows you to continue runs after Mother is defeated.
 	MISSINGMEMORY = Isaac.GetItemIdByName("Missing Memory")
 }
 
 Trinkets = {
+	-- Passive. Every golden chest has a chance to turn into an old chest.
 	BASEMENTKEY = Isaac.GetTrinketIdByName("Basement Key")
 }
 
+
+
+
+
+---!! LOCAL FUNCTIONS !!---
+-- If Isaac has Mom's Box, trinkets' effects are doubled.
+local function HasBox(trinketchance)
+	if Isaac.GetPlayer(0):HasCollectible(CollectibleType.COLLECTIBLE_MOMS_BOX) then
+		trinketchance = trinketchance * 2
+	end
+	return trinketchance
+end
+
+
+
+
+
+---!! GLOBAL FUNCTIONS !!---
+-- GAME STARTED --
 function rplus:OnGameStart(continued)
 	if not continued then
 		ORDLIFE_DATA = "notused"
@@ -22,6 +46,8 @@ function rplus:OnGameStart(continued)
 end
 rplus:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, rplus.OnGameStart)
 
+-- ACTIVE ITEM USED --
+	-- this function is solely for Ordinary Life item
 function rplus:OnItemUse(ctype, rng, player, flags, slot, customdata)
 	local level = game:GetLevel()
 	local player = Isaac.GetPlayer(0)
@@ -43,6 +69,7 @@ function rplus:OnItemUse(ctype, rng, player, flags, slot, customdata)
 end
 rplus:AddCallback(ModCallbacks.MC_USE_ITEM, rplus.OnItemUse, Collectibles.ORDLIFE)
 
+-- EVERY FRAME --
 function rplus:OnFrame()
 	local room = game:GetRoom()
 	local level = game:GetLevel()
@@ -78,6 +105,7 @@ function rplus:OnFrame()
 end
 rplus:AddCallback(ModCallbacks.MC_POST_UPDATE, rplus.OnFrame)
 
+-- WHEN NPC (ENEMY) DIES --
 function rplus:OnNPCDeath(npc)
 	local player = Isaac.GetPlayer(0)
 	
@@ -92,6 +120,14 @@ function rplus:OnNPCDeath(npc)
 	end	
 end
 rplus:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, rplus.OnNPCDeath)
+
+-- ON PICKUP INITIALIZATION -- 
+function rplus:OnPickupInit(pickup)
+	if pickup.Variant == PickupVariant.PICKUP_LOCKEDCHEST and math.random(100) <= HasBox(BASEMENTKEY_CHANCE) then
+		pickup:Morph(5, PickupVariant.PICKUP_OLDCHEST, 0, true, true, false)
+	end
+end
+rplus:AddCallback(ModCallbacks.MC_POST_PICKUP_INIT, rplus.OnPickupInit)
 
 
 
