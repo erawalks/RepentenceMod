@@ -2,7 +2,7 @@
   <!-- T.Isaac to Isaac -->
 	<active name="Ordinary Life" description="What if it all's just a dream?" gfx="01_ordinarylife.png" quality="3" maxcharges = "12"/>
   <!-- T.Isaac to Satan -->
-	<passive name="Missing memory" description="Who is she?" gfx="97_untitled.png" quality="2" />
+	<passive name="Missing Memory" description="Who is she?" gfx="97_untitled.png" quality="2" />
   <!-- T.Isaac to the Lamb -->
 	<trinket name="Basement Key" description="???" gfx="35_basementkey.png" />
 </items>
