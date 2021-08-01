@@ -19,8 +19,10 @@ Trinkets = {
 	BASEMENTKEY = Isaac.GetTrinketIdByName("Basement Key")
 }
 
-
-
+PocketItems = {
+	BERSERKER = Isaac.GetCardIdByName("The Berserker"),
+	SDDSHARD = Isaac.GetCardIdByName("Spindown Dice Shard")
+}
 
 
 ---!! LOCAL FUNCTIONS !!---
@@ -123,7 +125,9 @@ rplus:AddCallback(ModCallbacks.MC_POST_NPC_DEATH, rplus.OnNPCDeath)
 
 -- ON PICKUP INITIALIZATION -- 
 function rplus:OnPickupInit(pickup)
-	if pickup.Variant == PickupVariant.PICKUP_LOCKEDCHEST and math.random(100) <= HasBox(BASEMENTKEY_CHANCE) then
+	local player = Isaac.GetPlayer(0)
+	
+	if player:HasTrinket(Trinkets.BASEMENTKEY) and pickup.Variant == PickupVariant.PICKUP_LOCKEDCHEST and math.random(100) <= HasBox(BASEMENTKEY_CHANCE) then
 		pickup:Morph(5, PickupVariant.PICKUP_OLDCHEST, 0, true, true, false)
 	end
 end

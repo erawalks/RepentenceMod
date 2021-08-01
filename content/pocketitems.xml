@@ -1,16 +1,19 @@
 <pocketitems>
-	<!--Examples-->
-	<!-- card type="special" pickup="8" achievement="97" description="???" id="42" name="Chaos Card" announcer="334" mimiccharge="6" / -->
+	<!-- EXAMPLES FROM BASE GAME:
+		<card type="special" pickup="8" achievement="97" description="???" id="42" name="Chaos Card" announcer="334" mimiccharge="6" />
+		<card type="object" pickup="15" achievement="444" description="???" name="Cracked Key" id="78" mimiccharge="4" />
 	
-	<!--
-	Pill classes:
-		3: Major (a permanent effect, usually a stat modifier)
-		2: Medium (an effect with a significant impact, i.e. health or damage)
-		1: Minor (an effect which is only situationally useful)
-		0: Joke (an effect which is nigh useless)
-		
-	Append a + or - at the end to denote a positive or negative effect, no suffix means a neutral effect
+		!! Pill classes:
+			3: Major (a permanent effect, usually a stat modifier)
+			2: Medium (an effect with a significant impact, i.e. health or damage)
+			1: Minor (an effect which is only situationally useful)
+			0: Joke (an effect which is nigh useless)
+		!! Append a + or - at the end to denote a positive or negative effect, no suffix means a neutral effect
+
+		<pilleffect id="0" name="Bad Gas" announcer="328" class="1+" mimiccharge="1" / 
 	-->
-	<!-- pilleffect id="0" name="Bad Gas" announcer="328" class="1+" mimiccharge="1" / -->
+	
+	<card type="special" pickup="2" name="The Berserker" hud="The Berserker" mimiccharge="1" description="We are mortal and fragile" />
+	<card type="object" name="Spindown Dice Shard" hud="Spindown Dice Shard" mimiccharge="6" description="-1?" />
 	
 </pocketitems>
