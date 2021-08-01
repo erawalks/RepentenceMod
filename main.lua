@@ -42,7 +42,7 @@ end
 -- GAME STARTED --
 function rplus:OnGameStart(continued)
 	if not continued then
-		ORDLIFE_DATA = "notused"
+		ORDLIFE_DATA = nil
 		MISSINGMEMORY_DATA = nil
 	end
 end
@@ -54,7 +54,7 @@ function rplus:OnItemUse(ctype, rng, player, flags, slot, customdata)
 	local level = game:GetLevel()
 	local player = Isaac.GetPlayer(0)
 	
-	if ORDLIFE_DATA == "notused" then
+	if not ORDLIFE_DATA then
 		ORDLIFE_DATA = "used"
 		ORDLIFE_STAGE = level:GetStage()
 		music:Disable()
@@ -63,7 +63,7 @@ function rplus:OnItemUse(ctype, rng, player, flags, slot, customdata)
 		PlayerSprite:Load("gfx/characters/character_001_ordinarylife.anm2", true)
 		return {Discharge = false, Remove = false, ShowAnim = true}
 	elseif ORDLIFE_DATA == "used" then
-		ORDLIFE_DATA = "notused"
+		ORDLIFE_DATA = nil
 		music:Enable()
 		level:RemoveCurses(LevelCurse.CURSE_OF_DARKNESS)
 		return {Discharge = true, Remove = false, ShowAnim = true}
@@ -129,6 +129,15 @@ function rplus:OnPickupInit(pickup)
 	
 	if player:HasTrinket(Trinkets.BASEMENTKEY) and pickup.Variant == PickupVariant.PICKUP_LOCKEDCHEST and math.random(100) <= HasBox(BASEMENTKEY_CHANCE) then
 		pickup:Morph(5, PickupVariant.PICKUP_OLDCHEST, 0, true, true, false)
+	end
+	
+	-- If you want custom pickups to look fancy on the ground, use this template to replace the spritesheet 
+	-- (the spritesheet HAS to be exactly 128*128 with the image of custom pickup almost in the top-left, because
+	-- cardbacks default to a suit card, and we need to replace how THIS SUIT CARD'S BACK looks).
+	if pickup.Variant == 300 and pickup.SubType == PocketItems.SDDSHARD then
+		local sprite = pickup:GetSprite()
+		sprite:ReplaceSpritesheet(0, "gfx/items/pick ups/sddshard.png")
+		sprite:LoadGraphics()
 	end
 end
 rplus:AddCallback(ModCallbacks.MC_POST_PICKUP_INIT, rplus.OnPickupInit)
