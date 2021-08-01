@@ -1,31 +1,33 @@
----!! VARIABLES !!---
+
+---------------------
+----- VARIABLES -----
+---------------------
+
 local game = Game()
 local rplus = RegisterMod("Repentance Plus", 1)
 local sfx = SFXManager()
 local music = MusicManager()
-
 local BASEMENTKEY_CHANCE = 5
+local CARDRUNE_REPLACE_CHANCE = 2
 
 Collectibles = {
-	-- 12RR, on use deactivates all items and deletes everything from every room, allowing you to pass freely. On second use, this item discharges and everything
-	-- goes back to normal, allowing you to gain charges for next use.
 	ORDLIFE = Isaac.GetItemIdByName("Ordinary Life"),
-	-- Passive, allows you to continue runs after Mother is defeated.
 	MISSINGMEMORY = Isaac.GetItemIdByName("Missing Memory")
 }
 
 Trinkets = {
-	-- Passive. Every golden chest has a chance to turn into an old chest.
 	BASEMENTKEY = Isaac.GetTrinketIdByName("Basement Key")
 }
 
 PocketItems = {
-	BERSERKER = Isaac.GetCardIdByName("The Berserker"),
-	SDDSHARD = Isaac.GetCardIdByName("Spindown Dice Shard")
+	RJOKER = Isaac.GetCardIdByName("Joker?"),
+	SDDSHARD = Isaac.GetCardIdByName("Spindown Dice Shard") 
 }
 
+---------------------
+-- LOCAL FUNCTIONS --
+---------------------
 
----!! LOCAL FUNCTIONS !!---
 -- If Isaac has Mom's Box, trinkets' effects are doubled.
 local function HasBox(trinketchance)
 	if Isaac.GetPlayer(0):HasCollectible(CollectibleType.COLLECTIBLE_MOMS_BOX) then
@@ -34,11 +36,22 @@ local function HasBox(trinketchance)
 	return trinketchance
 end
 
+-- Helper function to return a random custom card to take place of the normal one.
+local function GetRandomCustomCard()
+	local keys = {}
+	for k in pairs(PocketItems) do
+	  table.insert(keys, k)
+	end
+
+	local random_key = keys[math.random(1, #keys)]
+	return PocketItems[random_key]
+end
 
 
+---------------------
+-- GLOBAL FUNCTIONS --
+---------------------
 
-
----!! GLOBAL FUNCTIONS !!---
 -- GAME STARTED --
 function rplus:OnGameStart(continued)
 	if not continued then
@@ -49,27 +62,28 @@ end
 rplus:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, rplus.OnGameStart)
 
 -- ACTIVE ITEM USED --
-	-- this function is solely for Ordinary Life item
-function rplus:OnItemUse(ctype, rng, player, flags, slot, customdata)
+function rplus:OnItemUse(itemused, rng, player, flags, slot, customdata)
 	local level = game:GetLevel()
 	local player = Isaac.GetPlayer(0)
 	
-	if not ORDLIFE_DATA then
-		ORDLIFE_DATA = "used"
-		ORDLIFE_STAGE = level:GetStage()
-		music:Disable()
-		level:AddCurse(LevelCurse.CURSE_OF_DARKNESS, false)
-		PlayerSprite = player:GetSprite()
-		PlayerSprite:Load("gfx/characters/character_001_ordinarylife.anm2", true)
-		return {Discharge = false, Remove = false, ShowAnim = true}
-	elseif ORDLIFE_DATA == "used" then
-		ORDLIFE_DATA = nil
-		music:Enable()
-		level:RemoveCurses(LevelCurse.CURSE_OF_DARKNESS)
-		return {Discharge = true, Remove = false, ShowAnim = true}
+	if itemused == Collectibles.ORDLIFE then
+		if not ORDLIFE_DATA then
+			ORDLIFE_DATA = "used"
+			ORDLIFE_STAGE = level:GetStage()
+			music:Disable()
+			level:AddCurse(LevelCurse.CURSE_OF_DARKNESS, false)
+			PlayerSprite = player:GetSprite()
+			PlayerSprite:Load("gfx/characters/character_001_ordinarylife.anm2", true)
+			return {Discharge = false, Remove = false, ShowAnim = true}
+		elseif ORDLIFE_DATA == "used" then
+			ORDLIFE_DATA = nil
+			music:Enable()
+			level:RemoveCurses(LevelCurse.CURSE_OF_DARKNESS)
+			return {Discharge = true, Remove = false, ShowAnim = true}
+		end
 	end
 end
-rplus:AddCallback(ModCallbacks.MC_USE_ITEM, rplus.OnItemUse, Collectibles.ORDLIFE)
+rplus:AddCallback(ModCallbacks.MC_USE_ITEM, rplus.OnItemUse)
 
 -- EVERY FRAME --
 function rplus:OnFrame()
@@ -131,9 +145,11 @@ function rplus:OnPickupInit(pickup)
 		pickup:Morph(5, PickupVariant.PICKUP_OLDCHEST, 0, true, true, false)
 	end
 	
-	-- If you want custom pickups to look fancy on the ground, use this template to replace the spritesheet 
-	-- (the spritesheet HAS to be exactly 128*128 with the image of custom pickup almost in the top-left, because
-	-- cardbacks default to a suit card, and we need to replace how THIS SUIT CARD'S BACK looks).
+	--[[
+	If you want custom pickups to look fancy on the ground, use this template to replace the spritesheet 
+	(the spritesheet HAS to be exactly 128*128 with the image of custom pickup almost in the top-left, because
+	cardbacks default to a suit card, and we need to replace how THIS SUIT CARD'S BACK looks).
+	--]]
 	if pickup.Variant == 300 and pickup.SubType == PocketItems.SDDSHARD then
 		local sprite = pickup:GetSprite()
 		sprite:ReplaceSpritesheet(0, "gfx/items/pick ups/sddshard.png")
@@ -142,9 +158,34 @@ function rplus:OnPickupInit(pickup)
 end
 rplus:AddCallback(ModCallbacks.MC_POST_PICKUP_INIT, rplus.OnPickupInit)
 
+-- ON GETTING A CARD --
+function rplus:OnCardInit(rng, card, playingcards, runes, onlyrunes)
+	if playingcards then
+		if math.random(100) <= CARDRUNE_REPLACE_CHANCE then
+			GetRandomCustomCard()
+		end
+	end
+end
+rplus:AddCallback(ModCallbacks.MC_GET_CARD, rplus.OnCardInit)
 
-
-
+-- ON USING CARD -- 
+function rplus:CardUsed(card, player, useflags)
+	local player = Isaac.GetPlayer(0)
+	
+	if card == PocketItems.RJOKER then
+		game:StartRoomTransition(-6, -1, RoomTransitionAnim.TELEPORT, player, -1)
+	end
+	
+	if card == PocketItems.SDDSHARD then
+		for _, entity in pairs(Isaac.GetRoomEntities()) do
+			if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
+				local id = entity.SubType - 1
+				entity:ToPickup():Morph(EntityType.ENTITY_PICKUP, 100, id, true, true, false)
+			end
+		end
+	end
+end
+rplus:AddCallback(ModCallbacks.MC_USE_CARD, rplus.CardUsed)
 
 
 
