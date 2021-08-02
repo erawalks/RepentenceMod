@@ -74,11 +74,9 @@ function rplus:OnItemUse(itemused, rng, player, flags, slot, customdata)
 			level:AddCurse(LevelCurse.CURSE_OF_DARKNESS, false)
 			PlayerSprite = player:GetSprite()
 			PlayerSprite:Load("gfx/characters/character_001_ordinarylife.anm2", true)
-			return {Discharge = false, Remove = false, ShowAnim = true}
+			return {Discharge = false, Remove = false, ShowAnim = false}
 		elseif ORDLIFE_DATA == "used" then
-			ORDLIFE_DATA = nil
-			music:Enable()
-			level:RemoveCurses(LevelCurse.CURSE_OF_DARKNESS)
+			player:UseActiveItem(CollectibleType.COLLECTIBLE_GLOWING_HOUR_GLASS, true, true, false, false, -1)
 			return {Discharge = true, Remove = false, ShowAnim = true}
 		end
 	end
@@ -106,6 +104,12 @@ function rplus:OnFrame()
 			player:DischargeActiveItem(ActiveSlot.SLOT_PRIMARY)
 			player:UseActiveItem(Collectibles.ORDLIFE, false, false, true, false, -1)
 			ORDLIFE_DATA = "notused"
+		end
+		if player:GetSprite():IsFinished("PickupWalkDown") then
+			level:RemoveCurses(LevelCurse.CURSE_OF_DARKNESS)
+			ORDLIFE_DATA = nil
+			music:Enable()
+			player:DischargeActiveItem(ActiveSlot.SLOT_PRIMARY)
 		end
 	end
 	
@@ -174,9 +178,7 @@ function rplus:CardUsed(card, player, useflags)
 	
 	if card == PocketItems.RJOKER then
 		game:StartRoomTransition(-6, -1, RoomTransitionAnim.TELEPORT, player, -1)
-	end
-	
-	if card == PocketItems.SDDSHARD then
+	elseif card == PocketItems.SDDSHARD then
 		for _, entity in pairs(Isaac.GetRoomEntities()) do
 			if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
 				local id = entity.SubType - 1
