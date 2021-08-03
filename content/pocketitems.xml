@@ -14,6 +14,7 @@
 	-->
 	
 	<card type="suit" name="Joker?" hud="Joker?" mimiccharge="1" description="¿¿¿" />
-	<card type="object" name="Spindown Dice Shard" hud="Spindown Dice Shard" mimiccharge="6" description="-1?" />
+	<card name="Spindown Dice Shard" hud="Spindown Dice Shard" mimiccharge="6" description="-1?" pickup ="161"/>
+	<rune name="Red Rune" hud="Red Rune" mimiccharge="4" description="Abyss" pickup="160"/>
 	
 </pocketitems>

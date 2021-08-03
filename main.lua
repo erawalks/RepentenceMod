@@ -21,7 +21,8 @@ Trinkets = {
 
 PocketItems = {
 	RJOKER = Isaac.GetCardIdByName("Joker?"),
-	SDDSHARD = Isaac.GetCardIdByName("Spindown Dice Shard") 
+	SDDSHARD = Isaac.GetCardIdByName("Spindown Dice Shard"),
+	REDRUNE = Isaac.GetCardIdByName("Red Rune")
 }
 
 ---------------------
@@ -148,23 +149,23 @@ function rplus:OnPickupInit(pickup)
 	if player:HasTrinket(Trinkets.BASEMENTKEY) and pickup.Variant == PickupVariant.PICKUP_LOCKEDCHEST and math.random(100) <= HasBox(BASEMENTKEY_CHANCE) then
 		pickup:Morph(5, PickupVariant.PICKUP_OLDCHEST, 0, true, true, false)
 	end
-	
-	--[[
-	If you want custom pickups to look fancy on the ground, use this template to replace the spritesheet 
-	(the spritesheet HAS to be exactly 128*128 with the image of custom pickup almost in the top-left, because
-	cardbacks default to a suit card, and we need to replace how THIS SUIT CARD'S BACK looks).
-	--]]
-	if pickup.Variant == 300 and pickup.SubType == PocketItems.SDDSHARD then
+
+	if pickup.Variant == 300 then
 		local sprite = pickup:GetSprite()
-		sprite:ReplaceSpritesheet(0, "gfx/items/pick ups/sddshard.png")
-		sprite:LoadGraphics()
+		if pickup.SubType == PocketItems.SDDSHARD then
+			sprite:Load("gfx/005.391_spindowndiceshard.anm2", true)
+			sprite:Play("Appear")
+		elseif pickup.SubType == PocketItems.REDRUNE then
+			sprite:Load("gfx/005.390_red rune.anm2", true)
+			sprite:Play("Appear")
+		end
 	end
 end
 rplus:AddCallback(ModCallbacks.MC_POST_PICKUP_INIT, rplus.OnPickupInit)
 
 -- ON GETTING A CARD --
 function rplus:OnCardInit(rng, card, playingcards, runes, onlyrunes)
-	if playingcards then
+	if playingcards or runes then
 		if math.random(100) <= CARDRUNE_REPLACE_CHANCE then
 			GetRandomCustomCard()
 		end
@@ -183,6 +184,19 @@ function rplus:CardUsed(card, player, useflags)
 			if entity.Variant == PickupVariant.PICKUP_COLLECTIBLE then
 				local id = entity.SubType - 1
 				entity:ToPickup():Morph(EntityType.ENTITY_PICKUP, 100, id, true, true, false)
+			end
+		end
+	elseif card == PocketItems.REDRUNE then
+		player:UseActiveItem(CollectibleType.COLLECTIBLE_ABYSS)
+		for _, entity in pairs(Isaac.GetRoomEntities()) do
+			if entity.Type == EntityType.ENTITY_PICKUP then
+				if (entity.Variant < 100 and entity.Variant > 0) or entity.Variant == 300 or entity.Variant == 350 or entity.Variant == 360 then
+					local pos = entity.Position
+					entity:Remove()
+					if math.random(100) <= 50 then
+						Isaac.Spawn(EntityType.ENTITY_FAMILIAR, FamiliarVariant.BLUE_FLY, RNG():RandomInt(5) + 1, pos, Vector.Zero, nil)
+					end
+				end
 			end
 		end
 	end
